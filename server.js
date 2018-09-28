@@ -1,11 +1,15 @@
-const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
+require('dotenv').config();
+const express = require('express');
+const bodyParser = require('body-parser');
+const shortId = require('short-id');
+const cors = require('cors');
 
-const cors = require('cors')
+const app = express();
 
 const mongoose = require('mongoose')
-mongoose.connect(process.env.MLAB_URI || 'mongodb://localhost/exercise-track' )
+mongoose.connect(process.env.MLAB_URI || 'mongodb://localhost/exercise-track', {
+  useMongoClient: true
+});
 
 app.use(cors())
 
@@ -42,6 +46,21 @@ app.use((err, req, res, next) => {
   res.status(errCode).type('txt')
     .send(errMessage)
 })
+
+// POST request to create User in db
+app.post('/api/exercise/new-user', (req, res) => {
+  res.send('Route Working');
+});
+
+// POST request to add exercise
+app.post('/api/exercise/add', (req, res) => {
+  res.send('route working');
+});
+
+// GET request to view User's workout log
+app.get('/api/exercise/log/:userId', (req, res) => {
+  res.send('route working');
+});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)

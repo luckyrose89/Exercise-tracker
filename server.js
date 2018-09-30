@@ -3,17 +3,24 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const shortId = require('short-id');
 const cors = require('cors');
+const person = require('./models/person');
 
 const app = express();
 
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
+
 mongoose.connect(process.env.MLAB_URI || 'mongodb://localhost/exercise-track', {
   useMongoClient: true
 });
 
+// Middleware
+
 app.use(cors())
 
-app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.urlencoded({
+  extended: false
+}))
 app.use(bodyParser.json())
 
 
@@ -22,10 +29,54 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+// App ROUTES
+
+// POST request to create User in db
+app.post('/api/exercise/new-user', (req, res) => {
+  var username = req.body.username;
+  person.findOne({
+    'username': username
+  }).then((item) => {
+    if (item) {
+      res.send('username already taken');
+    } else {
+      var data = new person({
+        username: username,
+        userId: shortId.generate()
+      });
+
+      data.save().then((doc) => {
+        res.json({
+          "username": doc.username,
+          "userId": doc.userId
+        });
+      }, (e) => {
+        res.status(400).send(e);
+      });
+    }
+  }, (e) => {
+    res.status(400).send(e);
+  });
+});
+
+// POST request to add exercise
+app.post('/api/exercise/add', (req, res) => {
+  res.send('route working');
+});
+
+// GET request to view User's workout log
+app.get('/api/exercise/log/:userId', (req, res) => {
+  res.send('route working');
+});
+
+
 
 // Not found middleware
 app.use((req, res, next) => {
-  return next({status: 404, message: 'not found'})
+  return next({
+    status: 404,
+    message: 'not found'
+  })
 })
 
 // Error Handling middleware
@@ -46,21 +97,6 @@ app.use((err, req, res, next) => {
   res.status(errCode).type('txt')
     .send(errMessage)
 })
-
-// POST request to create User in db
-app.post('/api/exercise/new-user', (req, res) => {
-  res.send('Route Working');
-});
-
-// POST request to add exercise
-app.post('/api/exercise/add', (req, res) => {
-  res.send('route working');
-});
-
-// GET request to view User's workout log
-app.get('/api/exercise/log/:userId', (req, res) => {
-  res.send('route working');
-});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)

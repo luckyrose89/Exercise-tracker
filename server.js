@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const shortId = require('short-id');
 const cors = require('cors');
 const person = require('./models/person');
+const moment = require('moment');
 
 const app = express();
 
@@ -61,7 +62,37 @@ app.post('/api/exercise/new-user', (req, res) => {
 
 // POST request to add exercise
 app.post('/api/exercise/add', (req, res) => {
-  res.send('route working');
+  var userId = req.body.userId;
+  var dateInput = '';
+  
+  if (req.body.date !== '') {
+    dateInput = moment(req.body.date).format('YYYY-MM-DD');
+  } 
+
+  person.findOne({'userId': userId}).then((entry) => {
+    if(entry) {
+       entry.exercise = entry.exercise.concat({
+        "description": req.body.description,
+        "duration": req.body.duration,
+        "date": dateInput
+      });
+
+      entry.save().then((doc) => {
+        res.json({
+          "username": entry.username,
+          "userId": entry.userId,
+          "exercise": entry.exercise[entry.exercise.length-1]
+        });
+      }).catch((e) => {
+        console.log(e);
+      });
+    } else {
+      res.send('unknown _id');
+    }
+  }, (e) => {
+    res.status(400).send(e);
+  });
+
 });
 
 // GET request to view User's workout log

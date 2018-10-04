@@ -16,16 +16,12 @@ mongoose.connect(process.env.MLAB_URI || 'mongodb://localhost/exercise-track', {
 });
 
 // Middleware
-
 app.use(cors())
-
-app.use(bodyParser.urlencoded({
-  extended: false
-}))
+app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
-
-
 app.use(express.static('public'))
+
+// Directory Index
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
@@ -49,7 +45,7 @@ app.post('/api/exercise/new-user', (req, res) => {
       data.save().then((doc) => {
         res.json({
           "username": doc.username,
-          "userId": doc.userId
+          "_id": doc.userId
         });
       }, (e) => {
         res.status(400).send(e);
@@ -80,8 +76,10 @@ app.post('/api/exercise/add', (req, res) => {
       entry.save().then((doc) => {
         res.json({
           "username": entry.username,
+          "description": entry.exercise[entry.exercise.length-1].description,
+          "duration": entry.exercise[entry.exercise.length-1].duration,
           "userId": entry.userId,
-          "exercise": entry.exercise[entry.exercise.length-1]
+          "date": entry.exercise[entry.exercise.length-1].date
         });
       }).catch((e) => {
         console.log(e);
@@ -95,9 +93,26 @@ app.post('/api/exercise/add', (req, res) => {
 
 });
 
+// GET request to view all users
+app.get('/api/exercise/users', (req, res) => {
+  var userList = [];
+  person.find().then((users) => {
+    users.forEach((user) => {
+      userList.push({
+        "username": user.username,
+        "_id": user.userId,
+        "_v": user._v
+      });
+    });
+    res.json(userList);
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
+});
+
 // GET request to view User's workout log
-app.get('/api/exercise/log/:userId', (req, res) => {
-  res.send('route working');
+app.get('/api/exercise/log', (req, res) => {
+  
 });
 
 

@@ -62,7 +62,7 @@ app.post('/api/exercise/add', (req, res) => {
   var dateInput = '';
   
   if (req.body.date !== '') {
-    dateInput = moment(req.body.date).format('YYYY-MM-DD');
+    dateInput = moment(req.body.date).format("YYYY-MM-DD");
   } 
 
   person.findOne({'userId': userId}).then((entry) => {
@@ -112,7 +112,37 @@ app.get('/api/exercise/users', (req, res) => {
 
 // GET request to view User's workout log
 app.get('/api/exercise/log', (req, res) => {
-  
+  var userId = req.query.userId;
+  person.findOne({'userId': userId}).then((item) => {
+    if (item) {
+      var exerciseList = item.exercise;
+      var fromDate =  req.query.from;
+      var toDate = req.query.to;
+      var limit = req.query.limit;
+
+      if (moment(fromDate, 'YYYY-MM-DD').isValid()) {
+        exerciseList = exerciseList.filter((e) => (e.date >= fromDate));
+      } else if (moment(toDate, 'YYYY-MM-DD').isValid()) {
+        exerciseList = exerciseList.filter((e) => (e.date <= toDate));
+      }
+
+      if (!isNaN (limit)) {
+        exerciseList = exerciseList.slice(0, limit);
+      }
+
+      res.send({
+        "_id": item.userId,
+        "username": item.username,
+        "log": exerciseList.length,
+        "exercise": exerciseList
+      });
+
+    } else {
+      res.send('unknown _id');
+    }
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
 });
 
 

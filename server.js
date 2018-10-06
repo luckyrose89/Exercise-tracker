@@ -133,8 +133,8 @@ app.get('/api/exercise/log', (req, res) => {
       res.send({
         "_id": item.userId,
         "username": item.username,
-        "log": exerciseList.length,
-        "exercise": exerciseList
+        "count": exerciseList.length,
+        "log": exerciseList
       });
 
     } else {

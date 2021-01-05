@@ -2,6 +2,8 @@
 
 #### A microservice project, part of Free Code Camp's curriculum
 
+A live demo of the project is available at the address https://exercise-tracker-mongodb.glitch.me/
+
 ### User Stories
 
 1. I can create a user by posting form data username to /api/exercise/new-user and returned will be an object with username and _id.
